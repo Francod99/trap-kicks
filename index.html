@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trap Kicks - Tienda de Zapatillas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilo personalizado para el header trapper */
+        .header-bg {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            animation: slideIn 1s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        .neon-text {
+            text-shadow: 0 0 10px #ff0066, 0 0 20px #ff0066, 0 0 30px #ff0066;
+            animation: neonPulse 2s infinite alternate;
+        }
+        /* Animaciones */
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes neonPulse {
+            0% { text-shadow: 0 0 10px #ff0066, 0 0 20px #ff0066, 0 0 30px #ff0066; }
+            100% { text-shadow: 0 0 15px #ff33cc, 0 0 25px #ff33cc, 0 0 40px #ff33cc; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .carousel-img {
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        .carousel-img.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .carousel-img:not(.active) {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+        .product-card {
+            transition: transform 0.5s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(255, 0, 102, 0.3);
+            background: linear-gradient(135deg, rgba(255, 0, 102, 0.1), rgba(255, 51, 204, 0.1));
+        }
+        .pagination-btn {
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .pagination-btn:hover {
+            transform: scale(1.1);
+            background-color: #ff33cc;
+        }
+        /* Estilo para el modal del carrito y AR */
+        .modal {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        /* Estilo del logo */
+        .logo {
+            width: 60px;
+            height: auto;
+            margin-right: 20px;
+        }
+        /* Estilo para las estrellas de reseñas */
+        .stars {
+            color: #ff33cc;
+        }
+        /* Estilo para el carrusel de recomendaciones */
+        .recommendation-carousel {
+            position: relative;
+            display: flex;
+            overflow: hidden;
+            width: 100%;
+            padding: 0 40px; /* Espacio para los botones de navegación */
+        }
+        .recommendation-carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease;
+            gap: 16px; /* Espacio entre tarjetas */
+        }
+        .recommendation-card {
+            flex: 0 0 250px; /* Tamaño más pequeño y uniforme */
+            margin: 0;
+            background: #2d2d2d;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .recommendation-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 51, 204, 0.3);
+        }
+        .recommendation-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            font-size: 18px;
+            z-index: 10;
+        }
+        .recommendation-nav:hover {
+            background: #ff33cc;
+            transform: scale(1.1);
+        }
+        .recommendation-nav.prev {
+            left: 10px;
+        }
+        .recommendation-nav.next {
+            right: 10px;
+        }
+        .recommendation-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .recommendation-dot {
+            width: 12px;
+            height: 12px;
+            background: #555;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        .recommendation-dot.active {
+            background: #ff33cc;
+            transform: scale(1.2);
+        }
+        .recommendation-dot:hover {
+            background: #ff0066;
+        }
+        /* Estilo para la barra de búsqueda */
+        .search-bar {
+            transition: all 0.3s ease;
+            margin-right: 20px;
+        }
+        .search-bar:focus {
+            border-color: #ff33cc;
+            box-shadow: 0 0 10px rgba(255, 51, 204, 0.5);
+        }
+        /* Partículas de fondo en el header */
+        #particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        /* Estilo para el modal de AR */
+        .ar-preview {
+            position: relative;
+            background: url('https://images.unsplash.com/photo-1519831388380-0e29a4b5b4aa?auto=format&fit=crop&w=600&q=80') no-repeat center center/cover;
+            height: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(255, 51, 204, 0.5);
+        }
+        .ar-product {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            transition: transform 0.3s ease, width 0.3s ease;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+        }
+        .ar-foot-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            opacity: 0.7;
+        }
+        .ar-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .ar-controls button {
+            background: rgba(255, 51, 204, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s ease;
+            font-size: 14px;
+        }
+        .ar-controls button:hover {
+            background: #ff33cc;
+        }
+        /* Estilo del modal del carrito */
+        .cart-modal-content {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            border-radius: 10px;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+        /* Estilo mejorado del footer */
+        .footer {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            padding: 2rem 0;
+            animation: fadeIn 1s ease-out;
+        }
+        .footer-column {
+            transition: transform 0.3s ease;
+        }
+        .footer-column:hover {
+            transform: translateY(-5px);
+        }
+        .social-icon {
+            transition: all 0.3s ease;
+            width: 30px;
+            height: 30px;
+            stroke: currentColor;
+            fill: none;
+        }
+        .social-icon:hover {
+            transform: scale(1.2);
+            stroke: #ff33cc;
+            text-shadow: 0 0 15px #ff33cc, 0 0 25px #ff33cc, 0 0 40px #ff33cc;
+        }
+        /* Botón para subir al inicio */
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff33cc;
+            padding: 12px;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+        }
+        .scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .scroll-to-top:hover {
+            transform: scale(1.1);
+            background: #ff0066;
+        }
+        .scroll-to-top svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+        /* Responsividad para móviles */
+        @media (max-width: 640px) {
+            .header-bg {
+                padding: 8px 0;
+            }
+            .logo {
+                width: 50px;
+                margin-right: 10px;
+            }
+            .neon-text {
+                font-size: 1.5rem;
+            }
+            .search-bar {
+                width: 100%;
+                margin-right: 0;
+                font-size: 14px;
+            }
+            .cart-modal-content {
+                width: 90%;
+                margin: 10px auto;
+                padding: 1rem;
+            }
+            .ar-preview {
+                height: 300px;
+            }
+            .ar-controls button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .filters {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .filters select, .filters input {
+                width: 100%;
+            }
+            .recommendation-card {
+                flex: 0 0 200px;
+            }
+            .recommendation-nav {
+                padding: 8px;
+            }
+            .hero-section {
+                height: 70vh;
+            }
+            .hero-section h2 {
+                font-size: 2rem;
+            }
+            .hero-section p {
+                font-size: 1rem;
+            }
+            .hero-section a {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+        /* Ajustes para pantallas grandes */
+        @media (min-width: 1024px) {
+            .recommendation-card {
+                flex: 0 0 220px; /* Más tarjetas visibles en pantallas grandes */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+    <!-- Header -->
+    <header class="header-bg py-4 sticky top-0 z-50">
+        <div id="particles"></div>
+        <div class="container mx-auto flex justify-between items-center px-4 space-y-2 md:space-y-0">
+            <div class="flex items-center space-x-6">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50 150 L100 50 L150 150 Z' fill='%232d2d2d'/%3E%3Ccircle cx='100' cy='100' r='50' fill='%23ff00ff'/%3E%3Ctext x='70' y='120' font-size='20' fill='%23ff00ff' font-family='Arial'%3ETRAP KICKS%3C/text%3E%3C/svg%3E" alt="Trap Kicks Logo" class="logo">
+                <h1 class="text-3xl md:text-4xl font-bold neon-text">Trap Kicks</h1>
+            </div>
+            <div class="flex-1 flex justify-center items-center space-x-8">
+                <input id="search-bar" type="text" placeholder="Buscar zapatillas..." class="search-bar bg-gray-800 text-white p-2 rounded w-1/2 md:w-1/3">
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#home" class="hover:text-pink-500 transition">Inicio</a>
+                    <a href="#products" class="hover:text-pink-500 transition">Productos</a>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-6">
+                <button class="relative" onclick="toggleCart()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-pink-500 text-white rounded-full px-2 text-xs">0</span>
+                </button>
+                <button class="md:hidden text-white" onclick="toggleMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Menú móvil -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-800 px-4 py-2">
+            <a href="#home" class="block py-2 hover:text-pink-500">Inicio</a>
+            <a href="#products" class="block py-2 hover:text-pink-500">Productos</a>
+        </div>
+    </header>
+
+    <!-- Modal del carrito -->
+    <div id="cart-modal" class="modal hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex justify-center items-start">
+        <div class="cart-modal-content w-full max-w-2xl mt-16 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50 150 L100 50 L150 150 Z' fill='%232d2d2d'/%3E%3Ccircle cx='100' cy='100' r='50' fill='%23ff00ff'/%3E%3Ctext x='70' y='120' font-size='20' fill='%23ff00ff' font-family='Arial'%3ETRAP KICKS%3C/text%3E%3C/svg%3E" alt="Trap Kicks Logo" class="logo mr-4">
+                    <h2 class="text-3xl font-bold neon-text">Carrito de Compras</h2>
+                </div>
+                <button class="text-pink-500 hover:text-pink-600 text-2xl" onclick="toggleCart()">✖</button>
+            </div>
+            <div id="cart-items" class="space-y-4 mb-6"></div>
+            <p id="cart-total" class="text-2xl font-bold neon-text mb-4">Total: $0.00</p>
+            <button id="buy-button" class="bg-pink-500 text-white py-2 px-6 rounded-full hover:bg-pink-600 transition w-full" onclick="buyNow()">Comprar</button>
+        </div>
+    </div>
+
+    <!-- Modal de AR -->
+    <div id="ar-modal" class="modal hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex justify-center items-center">
+        <div class="bg-gray-800 rounded-lg w-full max-w-lg p-6">
+            <h2 class="text-2xl font-bold neon-text mb-4">Probar en Realidad Aumentada</h2>
+            <p id="ar-product-name" class="text-lg font-bold mb-2"></p>
+            <p class="text-gray-400 mb-4">Visualiza las zapatillas en un entorno 3D realista.</p>
+            <div class="ar-preview relative">
+                <img id="ar-foot-overlay" class="ar-foot-overlay hidden" src="https://images.unsplash.com/photo-1512358958019-bcd03e056e70?auto=format&fit=crop&w=300&q=80" alt="Foot Overlay">
+                <img id="ar-product-image" class="ar-product" src="" alt="Product in AR">
+                <div class="ar-controls">
+                    <button onclick="rotateProduct(-10)">⟲ Girar Izq</button>
+                    <button onclick="rotateProduct(10)">⟳ Girar Der</button>
+                    <button onclick="zoomProduct(1.1)">➕ Zoom In</button>
+                    <button onclick="zoomProduct(0.9)">➖ Zoom Out</button>
+                    <button onclick="toggleFootMode()">👟 Modo Pie</button>
+                </div>
+            </div>
+            <div class="flex justify-end mt-4">
+                <button class="bg-pink-500 text-white py-2 px-4 rounded-full hover:bg-pink-600 transition" onclick="toggleARModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative h-96 flex items-center justify-center bg-cover bg-center hero-section" style="background-image: url('https://images.unsplash.com/photo-1600585155761-5e26f9e2bf5e?auto=format&fit=crop&w=1920&q=80')">
+        <div class="text-center">
+            <h2 class="text-4xl md:text-6xl font-bold neon-text mb-4">Zapatillas con Flow</h2>
+            <p class="text-lg md:text-xl">Las mejores marcas, el mejor estilo.</p>
+            <a href="#products" class="mt-6 inline-block bg-pink-500 text-white py-2 px-6 rounded-full hover:bg-pink-600 transition">Ver Colección</a>
+        </div>
+    </section>
+
+    <!-- Productos -->
+    <section id="products" class="py-12">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8 neon-text">Nuestras Zapatillas</h2>
+            <!-- Filtros -->
+            <div class="filters flex flex-col md:flex-row md:space-x-4 mb-8">
+                <div class="mb-4 md:mb-0">
+                    <label class="block text-lg font-bold mb-2">Filtrar por Marca</label>
+                    <select id="brand-filter" class="bg-gray-800 text-white p-2 rounded">
+                        <option value="">Todas</option>
+                        <option value="Nike">Nike</option>
+                        <option value="Adidas">Adidas</option>
+                        <option value="Puma">Puma</option>
+                        <option value="Jordan">Jordan</option>
+                        <option value="New Balance">New Balance</option>
+                        <option value="Reebok">Reebok</option>
+                        <option value="Vans">Vans</option>
+                    </select>
+                </div>
+                <div class="mb-4 md:mb-0">
+                    <label class="block text-lg font-bold mb-2">Filtrar por Talle</label>
+                    <select id="size-filter" class="bg-gray-800 text-white p-2 rounded">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-lg font-bold mb-2">Rango de Precio</label>
+                    <div class="flex space-x-2">
+                        <input id="price-min" type="number" placeholder="Mín" class="bg-gray-800 text-white p-2 rounded w-24">
+                        <input id="price-max" type="number" placeholder="Máx" class="bg-gray-800 text-white p-2 rounded w-24">
+                    </div>
+                </div>
+            </div>
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <!-- Paginación -->
+            <div id="pagination" class="flex justify-center space-x-4 mt-8"></div>
+        </div>
+    </section>
+
+    <!-- Sección de Recomendaciones -->
+    <section id="recommendations" class="py-12 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8 neon-text">Recomendaciones para ti</h2>
+            <div class="recommendation-carousel">
+                <button class="recommendation-nav prev" onclick="prevRecommendation()">❮</button>
+                <div id="recommendation-carousel-inner" class="recommendation-carousel-inner"></div>
+                <button class="recommendation-nav next" onclick="nextRecommendation()">❯</button>
+            </div>
+            <div id="recommendation-dots" class="recommendation-dots"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
+                <div class="footer-column">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50 150 L100 50 L150 150 Z' fill='%232d2d2d'/%3E%3Ccircle cx='100' cy='100' r='50' fill='%23ff00ff'/%3E%3Ctext x='70' y='120' font-size='20' fill='%23ff00ff' font-family='Arial'%3ETRAP KICKS%3C/text%3E%3C/svg%3E" alt="Trap Kicks Logo" class="logo mx-auto md:mx-0">
+                    <p class="text-gray-400 mt-2">Tu tienda de zapatillas con estilo urbano.</p>
+                </div>
+                <div class="footer-column">
+                    <h3 class="text-xl font-bold neon-text mb-2">Enlaces</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-400 hover:text-pink-500 transition">Inicio</a></li>
+                        <li><a href="#products" class="text-gray-400 hover:text-pink-500 transition">Productos</a></li>
+                        <li><a href="#terms" class="text-gray-400 hover:text-pink-500 transition">Términos y Condiciones</a></li>
+                        <li><a href="#privacy" class="text-gray-400 hover:text-pink-500 transition">Políticas de Privacidad</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3 class="text-xl font-bold neon-text mb-2">Redes Sociales</h3>
+                    <div class="flex justify-center md:justify-start space-x-6">
+                        <a href="#" class="social-icon">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4 9 5 13-1.615 1.13-3.615 1.744-5.615 1.744C8 22.064 13.565 22.876 18 19.907c1.99-.99 3.5-2.54 4.38-4.5.87-1.96.62-3.87-.5-5.62 1.49-.99 2.74-2.37 3.12-4.07-.5.49-1.37 1.14-2 1.29z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 9v6.75m4.5-6.75v6.75M12 3a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9a9 9 0 0 0-9-9zm0 0v1.5m0 15V18m-6-6h1.5m10.5 0h-1.5"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3 class="text-xl font-bold neon-text mb-2">Contacto</h3>
+                    <p class="text-gray-400">Email: <a href="mailto:info@trapkicks.com" class="hover:text-pink-500 transition">info@trapkicks.com</a></p>
+                    <p class="text-gray-400">WhatsApp: <a href="https://wa.me/1234567890" class="hover:text-pink-500 transition">+123 456 7890</a></p>
+                </div>
+            </div>
+            <p class="text-center text-gray-400 mt-6">© 2025 Trap Kicks. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Botón para subir al inicio -->
+    <button id="scroll-to-top" class="scroll-to-top" onclick="scrollToTop()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M23.245 20l-11.245-14.374-11.219 14.374-.781-.619 12-15.381 12 15.391-.755.609z"/>
+        </svg>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // Menú móvil
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Carrito
+        let cart = [];
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+            renderCart();
+        }
+
+        function addToCart(product) {
+            cart.push(product);
+            updateCartCount();
+            renderCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+            renderCart();
+        }
+
+        function updateCartCount() {
+            const cartCount = document.getElementById('cart-count');
+            cartCount.textContent = cart.length;
+        }
+
+        function renderCart() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += parseFloat(item.price);
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex justify-between items-center p-2 bg-gray-700 rounded-lg fade-in';
+                itemDiv.style.animationDelay = `${index * 0.1}s`;
+                itemDiv.innerHTML = `
+                    <div>
+                        <h4 class="font-bold">${item.name}</h4>
+                        <p class="text-gray-400">Talle: ${item.size} - $${item.price}</p>
+                    </div>
+                    <button class="text-pink-500 hover:text-pink-600" onclick="removeFromCart(${index})">Eliminar</button>
+                `;
+                cartItems.appendChild(itemDiv);
+            });
+            cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        // Botón Comprar
+        function buyNow() {
+            if (cart.length > 0) {
+                alert('Procesando tu compra. ¡Gracias por elegir Trap Kicks!');
+                cart = [];
+                updateCartCount();
+                renderCart();
+                toggleCart();
+            } else {
+                alert('Tu carrito está vacío. Agrega algunos productos primero.');
+            }
+        }
+
+        // Modal de AR
+        let currentARProduct = null;
+        let rotation = 0;
+        let zoomLevel = 1;
+        let footMode = false;
+
+        function toggleARModal(product = null) {
+            const modal = document.getElementById('ar-modal');
+            if (product) {
+                currentARProduct = product;
+                const productName = document.getElementById('ar-product-name');
+                const productImage = document.getElementById('ar-product-image');
+                productName.textContent = product.name;
+                productImage.src = product.images[0];
+                rotation = 0;
+                zoomLevel = 1;
+                footMode = false;
+                updateARProduct();
+            }
+            modal.classList.toggle('hidden');
+        }
+
+        function rotateProduct(angle) {
+            rotation += angle;
+            updateARProduct();
+        }
+
+        function zoomProduct(factor) {
+            zoomLevel = Math.max(0.5, Math.min(zoomLevel * factor, 2));
+            updateARProduct();
+        }
+
+        function toggleFootMode() {
+            footMode = !footMode;
+            const footOverlay = document.getElementById('ar-foot-overlay');
+            footOverlay.classList.toggle('hidden', !footMode);
+            updateARProduct();
+        }
+
+        function updateARProduct() {
+            const productImage = document.getElementById('ar-product-image');
+            productImage.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+            productImage.style.width = `${60 * zoomLevel}%`;
+            productImage.style.bottom = footMode ? '40px' : '20px';
+        }
+
+        // Generar opciones de talle dinámicamente
+        function populateSizeFilter() {
+            const sizeFilter = document.getElementById('size-filter');
+            for (let i = 36; i <= 43; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                sizeFilter.appendChild(option);
+            }
+        }
+
+        // Generar productos con imágenes específicas
+        const brands = ['Nike', 'Adidas', 'Puma', 'Jordan', 'New Balance', 'Reebok', 'Vans'];
+        const models = ['Air Max', 'Yeezy', 'Retro', 'Pulse', 'Fresh', 'Boost', 'Classic', 'Pro'];
+        const sizes = Array.from({ length: 8 }, (_, i) => 36 + i);
+        const initialReviews = [
+            { rating: 4.5, comment: "¡Increíbles! Muy cómodas." },
+            { rating: 5, comment: "Me encantan, el diseño es top." },
+            { rating: 4, comment: "Buena calidad, pero un poco caras." }
+        ];
+        const productImages = [
+            [
+                "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1600585155761-5e26f9e2bf5e?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1605346434674-2b3c779f7f9d?auto=format&fit=crop&w=600&q=80"
+            ],
+            [
+                "https://images.unsplash.com/photo-1603782631068-3b0e43c5a720?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1600185365926-3e6b6d6a139a?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1605408499391-6368c628ef42?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1597045566677-8cf032ed8685?auto=format&fit=crop&w=600&q=80"
+            ],
+            [
+                "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1600585152915-d208bec867a1?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1605346434674-2b3c779f7f9d?auto=format&fit=crop&w=600&q=80"
+            ],
+            [
+                "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1603782631068-3b0e43c5a720?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1605346434674-2b3c779f7f9d?auto=format&fit=crop&w=600&q=80"
+            ]
+        ];
+        let products = Array.from({ length: 100 }, (_, i) => ({
+            id: i + 1,
+            name: `${brands[i % brands.length]} ${models[i % models.length]} ${i + 1}`,
+            brand: brands[i % brands.length],
+            size: sizes[Math.floor(Math.random() * sizes.length)],
+            description: `Zapatillas de alta calidad con estilo ${brands[i % brands.length].toLowerCase()}.`,
+            price: (80 + Math.floor(Math.random() * 120)).toFixed(2),
+            images: productImages[i % productImages.length],
+            reviews: [initialReviews[Math.floor(Math.random() * initialReviews.length)]]
+        }));
+
+        // Sistema de interacciones para recomendaciones
+        let viewedBrands = {};
+
+        function trackBrandView(brand) {
+            viewedBrands[brand] = (viewedBrands[brand] || 0) + 1;
+        }
+
+        // Paginación y filtros
+        const itemsPerPage = 9;
+        let currentPage = 1;
+        let selectedBrand = '';
+        let selectedSize = '';
+        let searchQuery = '';
+        let priceMin = 0;
+        let priceMax = Infinity;
+
+        // Funciones para el carrusel de imágenes de productos
+        function nextImage(button) {
+            const carousel = button.parentElement;
+            const images = carousel.querySelectorAll('.carousel-img');
+            let currentIndex = -1;
+            images.forEach((img, index) => {
+                if (img.classList.contains('active')) {
+                    currentIndex = index;
+                }
+                img.classList.remove('active');
+            });
+            currentIndex = (currentIndex + 1) % images.length;
+            images[currentIndex].classList.add('active');
+        }
+
+        function prevImage(button) {
+            const carousel = button.parentElement;
+            const images = carousel.querySelectorAll('.carousel-img');
+            let currentIndex = -1;
+            images.forEach((img, index) => {
+                if (img.classList.contains('active')) {
+                    currentIndex = index;
+                }
+                img.classList.remove('active');
+            });
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            images[currentIndex].classList.add('active');
+        }
+
+        function renderProducts(page) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            const filteredProducts = products.filter(product => {
+                const price = parseFloat(product.price);
+                return (!selectedBrand || product.brand === selectedBrand) &&
+                       (!selectedSize || product.size === parseInt(selectedSize)) &&
+                       (price >= priceMin && price <= priceMax) &&
+                       (!searchQuery || 
+                        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        product.size.toString().includes(searchQuery));
+            });
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageProducts = filteredProducts.slice(start, end);
+
+            if (pageProducts.length === 0) {
+                grid.innerHTML = '<p class="text-center text-gray-400">No hay productos disponibles.</p>';
+            } else {
+                pageProducts.forEach((product, index) => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card bg-gray-800 rounded-lg overflow-hidden transition transform fade-in';
+                    productCard.style.animationDelay = `${index * 0.1}s`;
+                    const avgRating = product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length || 0;
+                    productCard.innerHTML = `
+                        <div class="relative h-64">
+                            ${product.images.map((img, i) => `
+                                <img class="carousel-img absolute w-full h-full object-cover ${i === 0 ? 'active' : ''}" src="${img}" alt="${product.name}">
+                            `).join('')}
+                            <button class="absolute top-1/2 left-2 transform -translate-y-1/2 bg-gray-900 p-2 rounded-full" onclick="prevImage(this)">❮</button>
+                            <button class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-gray-900 p-2 rounded-full" onclick="nextImage(this)">❯</button>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-xl font-bold">${product.name}</h3>
+                            <p class="text-gray-400">${product.description}</p>
+                            <p class="text-gray-400">Talle: ${product.size}</p>
+                            <p class="text-pink-500 font-bold mt-2">$${product.price}</p>
+                            <div class="stars mt-2">★★★★★ ${avgRating.toFixed(1)}/5 (${product.reviews.length} reseñas)</div>
+                            <div class="flex space-x-2 mt-4">
+                                <button class="bg-pink-500 text-white py-2 px-4 rounded-full hover:bg-pink-600 transition" onclick='addToCart(${JSON.stringify(product)})'>Comprar</button>
+                                <button class="bg-purple-500 text-white py-2 px-4 rounded-full hover:bg-purple-600 transition" onclick='toggleARModal(${JSON.stringify(product)})'>Probar en AR</button>
+                            </div>
+                        </div>
+                    `;
+                    productCard.addEventListener('mouseenter', () => trackBrandView(product.brand));
+                    grid.appendChild(productCard);
+                });
+            }
+
+            renderPagination(filteredProducts.length);
+        }
+
+        function renderPagination(totalItems) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.className = `pagination-btn px-4 py-2 rounded-full ${i === currentPage ? 'bg-pink-500' : 'bg-gray-700'} text-white`;
+                button.textContent = i;
+                button.onclick = () => {
+                    currentPage = i;
+                    renderProducts(i);
+                };
+                pagination.appendChild(button);
+            }
+        }
+
+        // Sistema de recomendaciones avanzado
+        let recommendedProducts = [];
+        let currentRecommendationIndex = 0;
+
+        function renderRecommendations() {
+            const carouselInner = document.getElementById('recommendation-carousel-inner');
+            const dotsContainer = document.getElementById('recommendation-dots');
+            carouselInner.innerHTML = '';
+            dotsContainer.innerHTML = '';
+
+            const mostViewedBrand = Object.keys(viewedBrands).sort((a, b) => viewedBrands[b] - viewedBrands[a])[0];
+            recommendedProducts = products.filter(p => mostViewedBrand ? p.brand === mostViewedBrand : true).slice(0, 10); // Aumentado a 10 productos
+
+            if (recommendedProducts.length === 0) {
+                carouselInner.innerHTML = '<p class="text-center text-gray-400 w-full">No hay recomendaciones disponibles.</p>';
+                return;
+            }
+
+            recommendedProducts.forEach((product, index) => {
+                const card = document.createElement('div');
+                card.className = 'recommendation-card';
+                card.innerHTML = `
+                    <img src="${product.images[0]}" alt="${product.name}" class="w-full h-40 object-cover">
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold">${product.name}</h3>
+                        <p class="text-gray-400 text-sm">${product.description}</p>
+                        <p class="text-pink-500 font-bold mt-2">$${product.price}</p>
+                        <button class="mt-2 bg-pink-500 text-white py-1 px-3 rounded-full hover:bg-pink-600 transition" onclick='addToCart(${JSON.stringify(product)})'>Comprar</button>
+                    </div>
+                `;
+                carouselInner.appendChild(card);
+
+                const dot = document.createElement('div');
+                dot.className = `recommendation-dot ${index === currentRecommendationIndex ? 'active' : ''}`;
+                dot.onclick = () => {
+                    currentRecommendationIndex = index;
+                    updateRecommendationCarousel();
+                };
+                dotsContainer.appendChild(dot);
+            });
+
+            updateRecommendationCarousel();
+        }
+
+        function updateRecommendationCarousel() {
+            const carouselInner = document.getElementById('recommendation-carousel-inner');
+            const dots = document.querySelectorAll('.recommendation-dot');
+            const cardWidth = 266; // Ancho de cada tarjeta (250px) + gap (16px)
+            carouselInner.style.transform = `translateX(-${currentRecommendationIndex * cardWidth}px)`;
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentRecommendationIndex);
+            });
+        }
+
+        function prevRecommendation() {
+            if (currentRecommendationIndex > 0) {
+                currentRecommendationIndex--;
+                updateRecommendationCarousel();
+            }
+        }
+
+        function nextRecommendation() {
+            if (currentRecommendationIndex < recommendedProducts.length - 1) {
+                currentRecommendationIndex++;
+                updateRecommendationCarousel();
+            }
+        }
+
+        // Barra de búsqueda
+        document.getElementById('search-bar').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            currentPage = 1;
+            renderProducts(1);
+        });
+
+        // Filtros
+        document.getElementById('brand-filter').addEventListener('change', (e) => {
+            selectedBrand = e.target.value;
+            currentPage = 1;
+            renderProducts(1);
+        });
+
+        document.getElementById('size-filter').addEventListener('change', (e) => {
+            selectedSize = e.target.value;
+            currentPage = 1;
+            renderProducts(1);
+        });
+
+        document.getElementById('price-min').addEventListener('input', (e) => {
+            priceMin = e.target.value ? parseFloat(e.target.value) : 0;
+            currentPage = 1;
+            renderProducts(1);
+        });
+
+        document.getElementById('price-max').addEventListener('input', (e) => {
+            priceMax = e.target.value ? parseFloat(e.target.value) : Infinity;
+            currentPage = 1;
+            renderProducts(1);
+        });
+
+        // Partículas de fondo en el header
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                particle.style.background = '#ff33cc';
+                particle.style.borderRadius = '50%';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.animation = `float ${Math.random() * 5 + 2}s infinite`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        const styleSheet = document.createElement('style');
+        styleSheet.innerHTML = `
+            @keyframes float {
+                0% { transform: translateY(0); opacity: 0.5; }
+                50% { opacity: 1; }
+                100% { transform: translateY(-20px); opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Botón para subir al inicio
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            const scrollButton = document.getElementById('scroll-to-top');
+            if (window.scrollY > 300) {
+                scrollButton.classList.add('visible');
+            } else {
+                scrollButton.classList.remove('visible');
+            }
+        });
+
+        // Inicializar
+        populateSizeFilter();
+        createParticles();
+        renderProducts(1);
+        renderRecommendations();
+    </script>
+</body>
+</html>
